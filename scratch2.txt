@@ -6,11 +6,26 @@ parseString(xml, function (err, result) {
     parkingRecords=result.d2LogicalModel.payloadPublication[0].genericPublicationExtension[0].parkingStatusPublication[0].parkingRecordStatus;
 
 	console.log(parkingRecords[0].parkingSiteStatus[0])
+    
+    parkingDict = []
+    
 	for (var i in parkingRecords) {
         pr = parkingRecords[i]
 		console.log(pr.parkingSiteStatus[0])
 		console.log(pr.parkingSiteOpeningStatus[0])  
 		console.log(pr.parkingRecordReference[0].$.id)
+        
+        parkingDict.push({
+    key:   pr.parkingRecordReference[0].$.id,
+    value: {
+        status: pr.parkingSiteStatus[0], 
+		open: pr.parkingSiteOpeningStatus[0]
+        }
+        
+});
+    console.dir(parkingDict)
+
+
    }
 })
 

@@ -4,7 +4,7 @@ function parseParkingBxl(xml){
 	
 	var parseString = require('xml2js').parseString;
 	let parkingRecords;
-	var parkingDict = []	
+	var parkingDict = {}
 	parseString(xml, function (err, result) {
 		parkingRecords=result.d2LogicalModel.payloadPublication[0].genericPublicationExtension[0].parkingStatusPublication[0].parkingRecordStatus;
 
@@ -16,19 +16,15 @@ function parseParkingBxl(xml){
 				+ " " + pr.parkingSiteOpeningStatus[0] 
 				+ " " + pr.parkingSiteStatus[0])
 			
-			parkingDict.push({
-				key:   pr.parkingRecordReference[0].$.id,
-				value: {
-						status: pr.parkingSiteStatus[0], 
-						open: pr.parkingSiteOpeningStatus[0]
-						}
-			
-			});
-			console.dir(parkingDict)
-	   }
-	})
-	parkingDict
-}
+			parkingDict[pr.parkingRecordReference[0].$.id] = {
+				id: pr.parkingRecordReference[0].$.id,
+				status: pr.parkingSiteStatus[0], 
+				open: pr.parkingSiteOpeningStatus[0]
+				}
+			}
+	   });
+	return parkingDict
+	}
 
 
-parseParkingBxl(xml)
+parseParkingBxl(xml)["06C15E61-2AA6-41C8-9216-AE117B85CC8A"]

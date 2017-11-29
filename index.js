@@ -31,24 +31,7 @@ function parseParkingBxl(xml){
 	return parkingDict
 	}
 
-// from https://www.brussels-parking-guidance.com/API/API/Datex/Export?publication=static&publication=static
-var ParkingNames = {
-	"AD7B77E6-A7AA-441A-8686-7B88CE92CF96" : {
-		name: "Dansaert",
-		id:"AD7B77E6-A7AA-441A-8686-7B88CE92CF96",
-		places: "221"
-	},
-	"C4E6F4CD-BEB7-408C-A184-C68A4EFA7F5A" : {
-		name: "Louise",
-		id:"C4E6F4CD-BEB7-408C-A184-C68A4EFA7F5A",
-		places: "320"
-	},
-	"B2FAAD2C-D797-40AC-8F5B-45FDE656A257": {
-		name: "Simonis",
-		id:"B2FAAD2C-D797-40AC-8F5B-45FDE656A257",
-		places: "132"
-	}
-}
+
 
 function logAgentRequest(request){
 	
@@ -137,16 +120,16 @@ function processV1Request (request, response) {
     // The default welcome intent has been matched, welcome the user (https://dialogflow.com/docs/events#default_welcome_intent)
     'input.welcome': () => {
 		console.log("input.welcome intent matched")
-		welcome_response = parkingWelcomeRichResponse
+		welcome_response = {
+			googleRichResponse: parkingWelcomeRichResponse
+		};
 		sendGoogleResponse(welcome_response); // Send simple response to user
     },
     // The find.parking intent has been matched, build a response with appropriate parkings
     'find.parking': () => {
 		console.log("find.parking intent matched")
-		let responseToUser = {
-		  googleRichResponse: buildParkingResponse(request)
-		};
-		sendGoogleResponse(responseToUser);
+		sendParkingResponse(request)
+		
     },
     // The debug intent has been matched
     'debug.here': () => {
@@ -220,23 +203,125 @@ function processV1Request (request, response) {
     }
   }
 
- function buildParkingResponse(request){
+  
+ // from https://www.brussels-parking-guidance.com/API/API/Datex/Export?publication=static&publication=static
+var BrusselsParkings = {
+	"Dansaert" : {
+		name: "Dansaert",
+		id:"AD7B77E6-A7AA-441A-8686-7B88CE92CF96",
+		places: "221"
+	},
+	"Louise" : {
+		name: "Louise",
+		id:"C4E6F4CD-BEB7-408C-A184-C68A4EFA7F5A",
+		places: "320"
+	},
+	"Simonis": {
+		name: "Simonis",
+		id:"B2FAAD2C-D797-40AC-8F5B-45FDE656A257",
+		places: "132"
+	},	
+	"Bota": {
+		name: "Bota",
+		id:"0C5DD4C3-01A5-482D-9D71-4E15FCFAA428",
+		places: "105"
+	},
+	"Rogier": {
+		name: "Rogier",
+		id:"59C99FB5-EA3C-4777-B4E7-18C4FD9C64A3",
+		places: "686"
+	}
+}
+
+
+  
+ function sendParkingResponse(request){
+
+	 var ParkingPerArea = {
+		'north':["Bota", "Rogier"],
+		'downtown': ["Dansaert"],
+		'midi': ["Dansaert"]
+	}
+
+	// add some aliases
+	ParkingPerArea["north station"] = ParkingPerArea['north']
+
+	ParkingPerArea["midi station"] = ParkingPerArea['midi']
+	ParkingPerArea["south station"] = ParkingPerArea['midi']
+	ParkingPerArea["south"] = ParkingPerArea['midi']
 
 	  // Construct rich response for Google Assistant (v1 requests only)
 	const app = new DialogflowApp();
 	
 	var zone = 'North'.toLowerCase()
+	parkingNames = ParkingPerArea[zone] || [];
 	
-	const parkingRichResponse = app.buildRichResponse()
-		.addSimpleResponse('I found the following parkings around ' + zone)
-		.addSuggestions(['👍'])
-		.addBasicCard(app.buildBasicCard(`parking 1  \t __Open__  \n  \nparkingsdqsdfsqdfqs 2  \t __Full__`)
-		// Create a basic card and add it to the rich response
-		.setTitle('Brussels real time parking info')
-		.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png',
-		  'car parking'));
+	///////////////////
+	var options = {
+		host: 'www.brussels-parking-guidance.com',
+		path: '/API/API/Datex/Export?publication=dynamic&publication=dynamic'
+	};
+	
+	var body = ""
 
-	return parkingRichResponse
+	https.get(options, function(res) {
+		console.log("http Got response: " + res.statusCode);
+	  
+		// Continuously update stream with data
+		var parkingXML = ""
+		res.on('data', function(d) {
+			console.log("res.on data");
+			parkingXML += d;
+		});
+		
+		res.on('end', function() {
+			console.log("res.on end");
+			console.log("------------------------------------");
+			console.log(parkingXML);
+			console.log("------------------------------------");						
+		
+		
+			var parkingStatus = parseParkingBxl(parkingXML)
+	
+			console.log(JSON.stringify(parkingStatus))
+			
+			body = ""
+			for (var i in parkingNames){
+				parking_name = parkingNames[i]
+				parking_id = BrusselsParkings[parking_name].id
+				var parking_stat 
+				
+				if (parkingStatus[parking_id].open != "open"){
+					parking_stat = "__Closed__"
+				} else if (parkingStatus[parking_id].status == "spacesAvailable"){
+					parking_stat = "__Available__"
+				} else if (parkingStatus[parking_id].status == "almostFull"){
+					parking_stat = "__Almost Full__"
+				} else {
+					parking_stat = "__Full__"
+				}
+			
+			body += parking_name + ":  \t" + parking_stat + "  \n"
+			}
+			
+			const parkingRichResponse = app.buildRichResponse()
+				.addSimpleResponse('I found the following parkings around ' + zone)
+				.addSuggestions(['👍'])
+				.addBasicCard(app.buildBasicCard(body)
+				// Create a basic card and add it to the rich response
+				.setTitle('Brussels real time parking info')
+				.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png',
+				  'car parking'));
+
+			let responseToUser = {
+					googleRichResponse: buildParkingResponse(request)
+				};
+				sendGoogleResponse(responseToUser);
+			});
+			
+			}).on('error', function(e) {
+			  console.log("http Got error: " + e.message);
+			});	
 }
 
   // Function to send correctly formatted responses to Dialogflow which are then sent to the user
@@ -345,6 +430,40 @@ const richResponsesV1 = {
 
 
 
+function fetchRTParkingData(req){
+	console.log(">> fetchRTParkingData")
+	
+	var options = {
+		host: 'www.brussels-parking-guidance.com',
+		path: '/API/API/Datex/Export?publication=dynamic&publication=dynamic'
+	};
+	
+	var body = ""
+
+	https.get(options, function(res) {
+		console.log("http Got response: " + res.statusCode);
+	  
+		// Continuously update stream with data
+		res.on('data', function(d) {
+			console.log("res.on data");
+			body += d;
+		});
+		
+		res.on('end', function() {
+			console.log("res.on end");
+			console.log("------------------------------------");
+			console.log(body);
+			console.log("------------------------------------");						
+		});
+	}).on('error', function(e) {
+	  console.log("http Got error: " + e.message);
+	});
+	
+	console.log("<< fetchRTParkingData")
+	return body
+ };
+	
+
 
   
 exports.helloGETX = function helloGETXX (req, response) {
@@ -382,10 +501,10 @@ exports.helloGETX = function helloGETXX (req, response) {
 			
 			let available = 0
 			body = ""
-			for (var i in ParkingNames){
-				if ((parkingStatus[ParkingNames[i].id].open == "open") 
-						&& (parkingStatus[ParkingNames[i].id].status == "spacesAvailable")){
-					body = ParkingNames[i].name + " has space available"
+			for (var i in BrusselsParkings){
+				if ((parkingStatus[BrusselsParkings[i].id].open == "open") 
+						&& (parkingStatus[BrusselsParkings[i].id].status == "spacesAvailable")){
+					body = BrusselsParkings[i].name + " has space available"
 					available += 1
 					}
 			}

@@ -136,60 +136,53 @@ function processV1Request (request, response) {
   const actionHandlers = {
     // The default welcome intent has been matched, welcome the user (https://dialogflow.com/docs/events#default_welcome_intent)
     'input.welcome': () => {
-      // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-	  welcome_response = 'Hello, I\'m here to help you with real time parking information!'
-	  
-//	  welcome_response = googleRichResponse
-      if (requestSource === googleAssistantRequest) {
-        sendGoogleResponse(welcome_response); // Send simple response to user
-      } else {
-        sendResponse(welcome_response); // Send simple response to user
-      }
+		console.log("input.welcome intent matched")
+		welcome_response = parkingWelcomeRichResponse
+		sendGoogleResponse(welcome_response); // Send simple response to user
     },
-    // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
+    // The find.parking intent has been matched, build a response with appropriate parkings
+    'find.parking': () => {
+		console.log("find.parking intent matched")
+		let responseToUser = {
+		  googleRichResponse: buildParkingResponse(request)
+		};
+		sendGoogleResponse(responseToUser);
+    },
+    // The debug intent has been matched
     'debug.here': () => {
+		console.log("find.parking intent matched")
+        let responseToUser = {
+			googleRichResponse: parkingWelcomeRichResponse
+		};	
+		sendGoogleResponse(responseToUser);
+    },
+    // The parking.welcome intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
+    'parking.welcome': () => {
+		console.error("parking.welcome intent matched")
       // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
       if (requestSource === googleAssistantRequest) {
         let responseToUser = {
-          googleRichResponse: googleRichResponse, // Optional, uncomment to enable
+          googleRichResponse: parkingWelcomeRichResponse, // Optional, uncomment to enable
           //googleOutputContexts: ['weather', 2, { ['city']: 'rome' }], // Optional, uncomment to enable
           speech: 'woof woof', // spoken response
           text: 'must cook' // displayed response
         };
 		sendGoogleResponse(responseToUser);
-      } else {
-        sendResponse("simple response debug.here"); // Send simple response to user
       }
     },
     // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
     'input.unknown': () => {
-      // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-      if (requestSource === googleAssistantRequest) {
+		console.error("input.unknown intent matched")
         sendGoogleResponse('I\'m having trouble, can you try that again?'); // Send simple response to user
-      } else {
-        sendResponse('I\'m having trouble, can you try that again?'); // Send simple response to user
-      }
     },
     // Default handler for unknown or undefined actions
     'default': () => {
-      // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-      if (requestSource === googleAssistantRequest) {
+		console.error("default intent matched")
         let responseToUser = {
-          //googleRichResponse: googleRichResponse, // Optional, uncomment to enable
-          //googleOutputContexts: ['weather', 2, { ['city']: 'rome' }], // Optional, uncomment to enable
           speech: 'search and destroy', // spoken response
           text: 'stay home read a book' // displayed response
         };
         sendGoogleResponse(responseToUser);
-      } else {
-        let responseToUser = {
-          //data: richResponsesV1, // Optional, uncomment to enable
-          //outputContexts: [{'name': 'weather', 'lifespan': 2, 'parameters': {'city': 'Rome'}}], // Optional, uncomment to enable
-          speech: 'This message is from Dialogflow\'s Cloud Functions for Firebase editor!', // spoken response
-          text: 'This is from Dialogflow\'s Cloud Functions for Firebase editor! :-)' // displayed response
-        };
-        sendResponse(responseToUser);
-      }
     }
   };
 
@@ -222,10 +215,30 @@ function processV1Request (request, response) {
         app.setContext(...responseToUser.googleOutputContexts);
       }
 
-	  console.log('sendGoogleResponse Response to Dialogflow (string): ' + JSON.stringify(responseToUser));
+	  console.log('sendGoogleResponse Response to Dialogflow (rich): ' + JSON.stringify(responseToUser));
       app.ask(googleResponse); // Send response to Dialogflow and Google Assistant
     }
   }
+
+ function buildParkingResponse(request){
+
+	  // Construct rich response for Google Assistant (v1 requests only)
+	const app = new DialogflowApp();
+	
+	var zone = 'North'.toLowerCase()
+	
+	const parkingRichResponse = app.buildRichResponse()
+		.addSimpleResponse('I found the following parkings around ' + zone)
+		.addSuggestions(['👍'])
+		.addBasicCard(app.buildBasicCard(`parking 1  \t __Open__  \n  \nparkingsdqsdfsqdfqs 2  \t __Full__`)
+		// Create a basic card and add it to the rich response
+		.setTitle('Brussels real time parking info')
+		.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png',
+		  'car parking'));
+
+	return parkingRichResponse
+}
+
   // Function to send correctly formatted responses to Dialogflow which are then sent to the user
   function sendResponse (responseToUser) {
     // if the response is a string send it as a response to the user
@@ -275,6 +288,17 @@ function processV1Request (request, response) {
 		.addSimpleResponse({ speech: 'This is another simple response',
 		displayText: 'This is the another simple response 💁' });
 
+	const parkingWelcomeRichResponse = app.buildRichResponse()
+		.addSimpleResponse('Welcome. Here\'s some real time parking info')
+		.addSuggestions(
+		['Downtown', 'Midi', 'North'])
+		// Create a basic card and add it to the rich response
+		.addBasicCard(app.buildBasicCard(``)
+		.setTitle('Brussels real time parking info')
+		.setImage('http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png',
+		  'car parking'))
+		.addSimpleResponse({ speech: 'Where are you headed?',
+		displayText: 'Where are you headed? 🚗' });
 
 
 // Rich responses for Slack and Facebook for v1 webhook requests

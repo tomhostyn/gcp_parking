@@ -265,6 +265,7 @@ var BrusselsParkings = {
 	var zone = loc['business-name'] || 
 					loc.city || 
 					loc['street-address'] || 
+					loc['subadmin-area'] || 
 					"brussel"
 					
 	console.log("zone:",zone)
@@ -303,7 +304,8 @@ var BrusselsParkings = {
 			body = ""
 			for (var i in parkingNames){
 				parking_name = parkingNames[i]
-				parking_id = BrusselsParkings[parking_name].id
+				BrusselsParkings[parking_name] || console.error("not found: " + parking_name)
+				parking_id = BrusselsParkings[parking_name].id 
 				var parking_stat 
 				
 				if (parkingStatus[parking_id].open != "open"){
@@ -321,12 +323,12 @@ var BrusselsParkings = {
 			
 			const parkingRichResponse = app.buildRichResponse()
 				.addSimpleResponse('I found the following parkings around ' + zone)
-				.addSuggestions(['👍'])
+				.addSuggestions(['👍', 'North', 'South', 'Central'])
 				.addBasicCard(app.buildBasicCard(body)
 				// Create a basic card and add it to the rich response
 				.setTitle('Brussels real time parking info')
-				.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png',
-				  'car parking'));
+				.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png', 
+				'car parking', 50, 50));				
 
 			let responseToUser = {
 					googleRichResponse: parkingRichResponse

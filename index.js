@@ -314,7 +314,7 @@ var BrusselsParkings = {
 				  'car parking'));
 
 			let responseToUser = {
-					googleRichResponse: buildParkingResponse(request)
+					googleRichResponse: parkingRichResponse
 				};
 				sendGoogleResponse(responseToUser);
 			});

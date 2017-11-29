@@ -294,7 +294,7 @@ var BrusselsParkings = {
 				if (parkingStatus[parking_id].open != "open"){
 					parking_stat = "__Closed__"
 				} else if (parkingStatus[parking_id].status == "spacesAvailable"){
-					parking_stat = "__Available__"
+					parking_stat = "__Parking Available__"
 				} else if (parkingStatus[parking_id].status == "almostFull"){
 					parking_stat = "__Almost Full__"
 				} else {

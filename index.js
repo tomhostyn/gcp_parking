@@ -250,7 +250,8 @@ var BrusselsParkings = {
 		'midi': ["Dansaert", "Louise"]
 	}
 
-	ParkingPerArea["brussel"] = ParkingPerArea['north'] + ParkingPerArea['midi'] + ParkingPerArea['downtown']
+	ParkingPerArea["brussel"] = ParkingPerArea['north'].concat(ParkingPerArea['midi'],ParkingPerArea['downtown'])
+	ParkingPerArea["brussel"] = Array.from(new Set(ParkingPerArea["brussel"]))    
 
 	// add some aliases
 	ParkingPerArea["north station"] = ParkingPerArea['north']

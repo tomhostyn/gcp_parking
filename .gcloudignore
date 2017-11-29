@@ -12,6 +12,11 @@
 # below:
 .git
 .gitignore
+.gitattributes
+
+dialogflow/
+scratch/
+bxl_xml_sample/
 
 node_modules
 #!include:.gitignore

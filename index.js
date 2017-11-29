@@ -48,6 +48,87 @@ var ParkingNames = {
 	}
 }
 
+function logAgentRequest(req){
+	console.log("id: " + req.id)
+	console.log("id: " + req.timestamp)
+	console.log(req.id)
+	console.log(req.id)
+	console.log(req.id)
+	console.log(req.result.resolvedQuery)
+	
+}
+
+
+exports.findParking = function findParkingFulfilment (req, res) {
+	console.log(">> findParkingFulfilment")
+	console.log("v25")
+	
+	request = req //orz
+	
+	switch (req.method) {
+    case 'GET':
+      console.log("GET");
+	  res.status(200).send("GET")
+      break;
+    case 'PUT':
+      console.log("PUT");
+	  res.status(200).send("PUT")
+      break;
+    case 'POST':
+      console.log("POST");
+	  res.status(200).send("POST")
+      break;
+    default:
+      console.error ("unsupported HTTP method: " + req.method);
+	  console.log(req.method);
+      res.status(500).send({ error: 'Something blew up!' });
+      break;
+  }
+  
+      if(req.rawBody) {
+        console.log(req.rawBody.toString('base64'));
+    } else {
+        console.error (`No rawBody in request`);
+    }
+	
+	if(req.body.text) {
+        console.log(req.body.text);
+    } else {
+        console.error (`No req.body.text in request`);
+    }
+
+	
+	console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+  console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+  if (request.body.result) {
+//    processV1Request(request, response);
+        console.log("V1");
+
+  } else if (request.body.queryResult) {
+  //  processV2Request(request, response);
+          console.log("V2");
+
+  } else {
+    console.log('Invalid Request');
+    return response.status(400).end('Invalid Webhook Request (expecting v1 or v2 webhook request)');
+  }
+
+
+	console.log(req.body.text)
+	
+/*	
+	if (req.body.message === undefined) {
+    // This is an error case, as "message" is required
+	console.error("No message defined")
+    res.status(400).send('No message defined!');
+  } else {
+    // Everything is ok
+    console.log(req.body.message);
+    res.status(200).end();
+  }		
+  */
+}
+
 /**
  * HTTP Cloud Function.
  *
@@ -55,10 +136,12 @@ var ParkingNames = {
  * @param {Object} res Cloud Function response context.
  */
   
-exports.helloGET = function helloGET (req, response) {
+exports.helloGETX = function helloGETXX (req, response) {
 
 	console.log(">> helloGet")
-	console.log("v16")
+	console.log("v17")
+  
+	console.dir(req)
   
 	var options = {
 		host: 'www.brussels-parking-guidance.com',

@@ -1,5 +1,13 @@
 {
-  "dependencies": {
-	"xml2js": "^0.4.19"
-  }
+	"name": "Parking Assistant for Google DialogFlow",
+	"version": "0.0.1",
+	"author": "Tom Hostyn",
+
+	"dependencies": {
+		"xml2js": "^0.4.19",
+		"actions-on-google": "^1.5.x",
+		"apiai": "^4.0.3",
+		"circular-json": "^0.4.0",
+		"json-stringify-safe": "^5.0.1"
+	}
 }

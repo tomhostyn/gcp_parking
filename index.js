@@ -260,7 +260,11 @@ var BrusselsParkings = {
 	ParkingPerArea["south station"] = ParkingPerArea['midi']
 	ParkingPerArea["south"] = ParkingPerArea['midi']
 
-	  // Construct rich response for Google Assistant (v1 requests only)
+	ParkingPerArea["central"] = ParkingPerArea['downtown']
+	ParkingPerArea["central station"] = ParkingPerArea['downtown']
+
+
+	// Construct rich response for Google Assistant (v1 requests only)
 	const app = new DialogflowApp();
 	let loc =(((((request || {}).body || {}).result || {}).parameters || {}).location || {})
 	var zone = loc['business-name'] || 

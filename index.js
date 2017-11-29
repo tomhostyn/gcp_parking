@@ -17,10 +17,11 @@ function parseParkingBxl(xml){
 
 		for (var i in parkingRecords) {
 			pr = parkingRecords[i]
+			/*
 			console.log(pr.parkingRecordReference[0].$.id 
 				+ " " + pr.parkingSiteOpeningStatus[0] 
 				+ " " + pr.parkingSiteStatus[0])
-			
+			*/
 			parkingDict[pr.parkingRecordReference[0].$.id] = {
 				id: pr.parkingRecordReference[0].$.id,
 				status: pr.parkingSiteStatus[0], 
@@ -65,6 +66,12 @@ function logAgentRequest(request){
 		console.error("no request.body.result.action");
 	} else {
 		console.log("request.body.result.action: ",request.body.result.action);
+	}
+
+	if (request.body.result.parameters === undefined){
+		console.error("no request.body.result.parameters");
+	} else {
+		console.log("request.body.result.parameters: ", JSON.stringify(request.body.result.parameters))
 	}
 	
 	let requestSource = (request.body.originalRequest) ? request.body.originalRequest.source : undefined;
@@ -239,9 +246,11 @@ var BrusselsParkings = {
 
 	 var ParkingPerArea = {
 		'north':["Bota", "Rogier"],
-		'downtown': ["Dansaert"],
-		'midi': ["Dansaert"]
+		'downtown': ["Dansaert", "Simonis"],
+		'midi': ["Dansaert", "Louise"]
 	}
+
+	ParkingPerArea["brussel"] = ParkingPerArea['north'] + ParkingPerArea['midi'] + ParkingPerArea['downtown']
 
 	// add some aliases
 	ParkingPerArea["north station"] = ParkingPerArea['north']
@@ -252,11 +261,17 @@ var BrusselsParkings = {
 
 	  // Construct rich response for Google Assistant (v1 requests only)
 	const app = new DialogflowApp();
+	let loc =(((((request || {}).body || {}).result || {}).parameters || {}).location || {})
+	var zone = loc['business-name'] || 
+					loc.city || 
+					loc['street-address'] || 
+					"brussel"
+					
+	console.log("zone:",zone)
+	zone = zone.toLowerCase()
 	
-	var zone = 'North'.toLowerCase()
 	parkingNames = ParkingPerArea[zone] || [];
 	
-	///////////////////
 	var options = {
 		host: 'www.brussels-parking-guidance.com',
 		path: '/API/API/Datex/Export?publication=dynamic&publication=dynamic'
@@ -276,14 +291,14 @@ var BrusselsParkings = {
 		
 		res.on('end', function() {
 			console.log("res.on end");
-			console.log("------------------------------------");
-			console.log(parkingXML);
-			console.log("------------------------------------");						
+			//console.log("------------------------------------");
+			//console.log(parkingXML);
+			//console.log("------------------------------------");						
 		
 		
 			var parkingStatus = parseParkingBxl(parkingXML)
 	
-			console.log(JSON.stringify(parkingStatus))
+			//console.log(JSON.stringify(parkingStatus))
 			
 			body = ""
 			for (var i in parkingNames){
@@ -364,7 +379,7 @@ var BrusselsParkings = {
 		formatting like *emphasis* or _italics_, **strong** or __bold__,
 		and ***bold itallic*** or ___strong emphasis___ as well as other things
 		like line  \nbreaks`) // Note the two spaces before '\n' required for a
-							// line break to be rendered in the card
+							// line break to be rendered in the car72d
 		.setSubtitle('This is a subtitle')
 		.setTitle('Title: this is a title')
 		.addButton('This is a button', 'https://assistant.google.com/')
@@ -381,7 +396,7 @@ var BrusselsParkings = {
 		.addBasicCard(app.buildBasicCard(``)
 		.setTitle('Brussels real time parking info')
 		.setImage('http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png',
-		  'car parking'))
+		  'car parking', 50, 50))
 		.addSimpleResponse({ speech: 'Where are you headed?',
 		displayText: 'Where are you headed? 🚗' });
 

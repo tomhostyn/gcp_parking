@@ -11,7 +11,6 @@
 
 	"dependencies": {
 		"xml2js": "^0.4.19",
-		"actions-on-google": "^1.5.x",
 		"apiai": "^4.0.3"
 	}
 }

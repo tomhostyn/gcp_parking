@@ -1,3 +1,12 @@
+/*
+ *
+ *  deploy :
+ * gcloud beta  functions deploy findParking  --stage-bucket tom_hostyn_parking_staging --trigger-http
+ * gcloud beta functions logs read
+ *
+ */
+
+
 var http = require('http')
 var https = require('https')
 var xml2js = require('xml2js')
@@ -35,6 +44,9 @@ function parseParkingBxl(xml){
 
 
 function logAgentRequest(request){
+	
+	console.log("v28")
+
 	
 	switch (request.method) {
     case 'GET':
@@ -92,7 +104,6 @@ function logAgentRequest(request){
 
 exports.findParking = function findParkingFulfilment (request, response) {
 	console.log(">> findParkingFulfilment")
-	console.log("v27")
 	
 	logAgentRequest(request)
 	
@@ -326,14 +337,20 @@ var BrusselsParkings = {
 			body += parking_name + ":  \t" + parking_stat + "  \n"
 			}
 			
+			var parkingImage = 'http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png'
+			var parkingImage = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png'
+			//var parkingImage = 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png'
 			const parkingRichResponse = app.buildRichResponse()
 				.addSimpleResponse('I found the following parkings around ' + zone)
 				.addSuggestions(['👍', 'North', 'South', 'Central'])
 				.addBasicCard(app.buildBasicCard(body)
 				// Create a basic card and add it to the rich response
 				.setTitle('Brussels real time parking info')
-				.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png', 
-				'car parking', 50, 50));				
+				//.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png', 
+				//.setImage('https://www.bluepeaks.co.nz/wp-content/themes/bluepeaks-lodge-2016/images/icon-off-street-parking.png', 				
+				.setImage(parkingImage, 'car parking', 500, 10)
+				.setImageDisplay('CROPPED'));	
+								
 
 			let responseToUser = {
 					googleRichResponse: parkingRichResponse
@@ -403,7 +420,8 @@ var BrusselsParkings = {
 		.addBasicCard(app.buildBasicCard(``)
 		.setTitle('Brussels real time parking info')
 		.setImage('http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png',
-		  'car parking', 50, 50))
+		  'car parking')
+		  .setImageDisplay('CROPPED'))
 		.addSimpleResponse({ speech: 'Where are you headed?',
 		displayText: 'Where are you headed? 🚗' });
 

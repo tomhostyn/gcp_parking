@@ -1,10 +1,9 @@
-/*
- *
- *  deploy :
- * gcloud beta  functions deploy findParking  --stage-bucket tom_hostyn_parking_staging --trigger-http
- * gcloud beta functions logs read
- *
- */
+//
+// Dialogflow fulfillment for a parking assistant agent.
+// Based on sample code by Google
+//				https://github.com/dialogflow/fulfillment-webhook-nodejs.git
+// using the Brussels open data store http://opendatastore.brussels/dataset/parking-occupancy
+//
 
 
 var http = require('http')
@@ -46,7 +45,6 @@ function parseParkingBxl(xml){
 function logAgentRequest(request){
 	
 	console.log("v28")
-
 	
 	switch (request.method) {
     case 'GET':
@@ -69,7 +67,7 @@ function logAgentRequest(request){
 	if (request.body.result) {
 		console.log("Dialogflow V1 request");
 	} else if (request.body.queryResult) {
-		console.log("Dialogflow V2 request");
+		console.error("Dialogflow V2 request - unsupported");
 	} else {
 		console.log('Dialogflow Invalid Request');
 	}	
@@ -78,6 +76,12 @@ function logAgentRequest(request){
 		console.error("no request.body.result.action");
 	} else {
 		console.log("request.body.result.action: ",request.body.result.action);
+	}
+
+	if (request.body.result.resolvedQuery === undefined){
+		console.error("no request.body.result.resolvedQuery");
+	} else {
+		console.log("request.body.result.resolvedQuery: ", JSON.stringify(request.body.result.resolvedQuery))
 	}
 
 	if (request.body.result.parameters === undefined){
@@ -261,8 +265,8 @@ var BrusselsParkings = {
 		'midi': ["Dansaert", "Louise"]
 	}
 
-	ParkingPerArea["brussel"] = ParkingPerArea['north'].concat(ParkingPerArea['midi'],ParkingPerArea['downtown'])
-	ParkingPerArea["brussel"] = Array.from(new Set(ParkingPerArea["brussel"]))    
+	ParkingPerArea["brussels"] = ParkingPerArea['north'].concat(ParkingPerArea['midi'],ParkingPerArea['downtown'])
+	ParkingPerArea["brussels"] = Array.from(new Set(ParkingPerArea["brussels"]))    
 
 	// add some aliases
 	ParkingPerArea["north station"] = ParkingPerArea['north']
@@ -278,16 +282,21 @@ var BrusselsParkings = {
 	// Construct rich response for Google Assistant (v1 requests only)
 	const app = new DialogflowApp();
 	let loc =(((((request || {}).body || {}).result || {}).parameters || {}).location || {})
+	let query =(((request || {}).body || {}).result || {}).resolvedQuery
+	
 	var zone = loc['business-name'] || 
 					loc.city || 
 					loc['street-address'] || 
-					loc['subadmin-area'] || 
-					"brussel"
+					loc['subadmin-area'] ||
+					query ||
+					'never be null'
+
+	let fallback_zone = "brussels"
 					
 	console.log("zone:",zone)
 	zone = zone.toLowerCase()
 	
-	parkingNames = ParkingPerArea[zone] || [];
+	parkingNames = ParkingPerArea[zone] || ParkingPerArea[fallback_zone] || [];
 	
 	var options = {
 		host: 'www.brussels-parking-guidance.com',

@@ -33,4 +33,4 @@ $NPM_BIN/functions deploy findParking --trigger-http
 
 $NPM_BIN/functions config list --json
 
-echo "access console using 'functions logs read'"
+echo "access console using '$NPM_BIN/functions logs read'"

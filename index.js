@@ -11,7 +11,7 @@ var http = require('http')
 var https = require('https')
 var xml2js = require('xml2js')
 
-const version = "v30"
+const index_js_version = "v32"
 
 //  ********************************************************************************
 //
@@ -20,11 +20,41 @@ const version = "v30"
 //  ********************************************************************************
 
 
-// hello world test
-exports.helloWorld = (req, res) => res.send("Hello, World!");
+/**
+ * HTTP Cloud Function versionFulfilment
+ * 
+ * sends code and package version to client.
+ * potential security issue - expose only for local ngrok development
+ *
+ * @param {Object} request Cloud Function request context.
+ * @param {Object} response Cloud Function response context.
+ */
+
+exports.version = function versionFulfilment (request, response) {
+	let version = versionString()
+	
+	let pwd = process.env.PWD || "no pwd"
+
+	if (pwd.substring(0,4) == "/mnt") {
+		// running on emulator
+		response.send(version);		
+	} else {
+		// running in google cloud
+		response.status(400).end("Only avalailable in emulator");
+	}
+	console.log(version);
+}
+
+function versionString (){
+	let pjson = require('./package.json');
+	return "Parking assistant v" + pjson.version + " - index.js " + index_js_version
+}
 
 /**
- * HTTP Cloud Function.
+ * HTTP Cloud Function findParkingFulfilment
+ * 
+ * sends code and package version to client.
+ * potential security issue - expose only for local ngrok development
  *
  * @param {Object} request Cloud Function request context.
  * @param {Object} response Cloud Function response context.
@@ -40,14 +70,15 @@ exports.findParking = function findParkingFulfilment (request, response) {
 	} else if (request.body.queryResult) {
 		console.error ("Dialogflow V2 requests not supported");
 		response.status(501).send({ error: 'Dialogflow V2 requests not supported' });
+	} else if (request.method == 'GET') {
+		console.error ("browser call")
+		response.send("Browser GET call")
 	} else {
 		console.error('Invalid Request');
-		return response.status(400).end('Invalid Webhook Request (expecting v1 or v2 webhook request)');
+		response.status(400).end('Invalid Webhook Request (expecting v1 or v2 webhook request)');
 	}	
 	console.log("<< findParkingFulfilment")
 }
-
-
 
 const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
 
@@ -76,13 +107,12 @@ function parseParkingBxl(xml){
 			}
 	   });
 	return parkingDict
-	}
-
-
+}
 
 function logAgentRequest(request){
 	
-	console.log(version)
+	let version = versionString()
+	console.log(version);
 	
 	switch (request.method) {
     case 'GET':

@@ -29,6 +29,7 @@ echo $GCP_PROJECT_NAME | $NPM_BIN/functions start
 
 $NPM_BIN/functions deploy helloWorld --trigger-http
 $NPM_BIN/functions deploy findParking --trigger-http
+$NPM_BIN/functions deploy version --trigger-http
 
 
 $NPM_BIN/functions config list --json

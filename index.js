@@ -295,7 +295,6 @@ var BrusselsParkings = {
 	ParkingPerArea["central"] = ParkingPerArea['downtown']
 	ParkingPerArea["central station"] = ParkingPerArea['downtown']
 
-
 	// Construct rich response for Google Assistant (v1 requests only)
 	const app = new DialogflowApp();
 	let loc =(((((request || {}).body || {}).result || {}).parameters || {}).location || {})
@@ -373,9 +372,9 @@ var BrusselsParkings = {
 				sendGoogleResponse(responseToUser);
 			});
 			
-			}).on('error', function(e) {
-			  console.log("http Got error: " + e.message);
-			});	
+		}).on('error', function(e) {
+		  console.log("http Got error: " + e.message);
+		});	
 	}
 }
 

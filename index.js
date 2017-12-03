@@ -71,8 +71,8 @@ exports.findParking = function findParkingFulfilment (request, response) {
 		console.error ("Dialogflow V2 requests not supported");
 		response.status(501).send({ error: 'Dialogflow V2 requests not supported' });
 	} else if (request.method == 'GET') {
-		console.error ("browser call")
-		response.send("Browser GET call")
+		console.error ("browser GET request")
+		response.send("Only Dialogflow POST requests supported")
 	} else {
 		console.error('Invalid Request');
 		response.status(400).end('Invalid Webhook Request (expecting v1 or v2 webhook request)');

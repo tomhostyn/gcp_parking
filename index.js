@@ -361,16 +361,10 @@ var BrusselsParkings = {
 		});
 		
 		res.on('end', function() {
-			console.log("res.on end");
-			//console.log("------------------------------------");
-			//console.log(parkingXML);
-			//console.log("------------------------------------");						
-		
+			console.log("res.on end");		
 		
 			var parkingStatus = parseParkingBxl(parkingXML)
-	
-			//console.log(JSON.stringify(parkingStatus))
-			
+				
 			body = ""
 			for (var i in parkingNames){
 				parking_name = parkingNames[i]
@@ -391,20 +385,15 @@ var BrusselsParkings = {
 			body += parking_name + ":  \t" + parking_stat + "  \n"
 			}
 			
-			var parkingImage = 'http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png'
 			var parkingImage = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png'
-			//var parkingImage = 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png'
 			const parkingRichResponse = app.buildRichResponse()
 				.addSimpleResponse('I found the following parkings around ' + zone)
 				.addSuggestions(['👍', 'North', 'South', 'Central'])
 				.addBasicCard(app.buildBasicCard(body)
-				// Create a basic card and add it to the rich response
-				.setTitle('Brussels real time parking info')
-				//.setImage('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Feature_parking.svg/1000px-Feature_parking.svg.png', 
-				//.setImage('https://www.bluepeaks.co.nz/wp-content/themes/bluepeaks-lodge-2016/images/icon-off-street-parking.png', 				
-				.setImage(parkingImage, 'car parking', 500, 10)
-				.setImageDisplay('CROPPED'));	
-								
+					// Create a basic card and add it to the rich response
+					.setTitle('Brussels real time parking info')
+					.setImage(parkingImage, 'car parking', 500, 10)
+					.setImageDisplay('CROPPED'));	
 
 			let responseToUser = {
 					googleRichResponse: parkingRichResponse
@@ -446,26 +435,6 @@ var BrusselsParkings = {
 
 	  // Construct rich response for Google Assistant (v1 requests only)
 	const app = new DialogflowApp();
-	const googleRichResponse = app.buildRichResponse()
-		.addSimpleResponse('This is the first simple response for Google Assistant')
-		.addSuggestions(
-		['Suggestion Chip', 'Another Suggestion Chip'])
-		// Create a basic card and add it to the rich response
-		.addBasicCard(app.buildBasicCard(`This is a basic card.  Text in a
-		basic card can include "quotes" and most other unicode characters
-		including emoji 📱.  Basic cards also support some markdown
-		formatting like *emphasis* or _italics_, **strong** or __bold__,
-		and ***bold itallic*** or ___strong emphasis___ as well as other things
-		like line  \nbreaks`) // Note the two spaces before '\n' required for a
-							// line break to be rendered in the car72d
-		.setSubtitle('This is a subtitle')
-		.setTitle('Title: this is a title')
-		.addButton('This is a button', 'https://assistant.google.com/')
-		.setImage('https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
-		  'Image alternate text'))
-		.addSimpleResponse({ speech: 'This is another simple response',
-		displayText: 'This is the another simple response 💁' });
-
 	const parkingWelcomeRichResponse = app.buildRichResponse()
 		.addSimpleResponse('Welcome. Here\'s some real time parking info')
 		.addSuggestions(
@@ -478,153 +447,3 @@ var BrusselsParkings = {
 		  .setImageDisplay('CROPPED'))
 		.addSimpleResponse({ speech: 'Where are you headed?',
 		displayText: 'Where are you headed? 🚗' });
-
-
-// Rich responses for Slack and Facebook for v1 webhook requests
-const richResponsesV1 = {
-  'slack': {
-    'text': 'This is a text response for Slack.',
-    'attachments': [
-      {
-        'title': 'Title: this is a title',
-        'title_link': 'https://assistant.google.com/',
-        'text': 'This is an attachment.  Text in attachments can include \'quotes\' and most other unicode characters including emoji 📱.  Attachments also upport line\nbreaks.',
-        'image_url': 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
-        'fallback': 'This is a fallback.'
-      }
-    ]
-  },
-  'facebook': {
-    'attachment': {
-      'type': 'template',
-      'payload': {
-        'template_type': 'generic',
-        'elements': [
-          {
-            'title': 'Title: this is a title',
-            'image_url': 'https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png',
-            'subtitle': 'This is a subtitle',
-            'default_action': {
-              'type': 'web_url',
-              'url': 'https://assistant.google.com/'
-            },
-            'buttons': [
-              {
-                'type': 'web_url',
-                'url': 'https://assistant.google.com/',
-                'title': 'This is a button'
-              }
-            ]
-          }
-        ]
-      }
-    }
-  }
-};
-
-
-
-function fetchRTParkingData(req){
-	console.log(">> fetchRTParkingData")
-	
-	var options = {
-		host: 'www.brussels-parking-guidance.com',
-		path: '/API/API/Datex/Export?publication=dynamic&publication=dynamic'
-	};
-	
-	var body = ""
-
-	https.get(options, function(res) {
-		console.log("http Got response: " + res.statusCode);
-	  
-		// Continuously update stream with data
-		res.on('data', function(d) {
-			console.log("res.on data");
-			body += d;
-		});
-		
-		res.on('end', function() {
-			console.log("res.on end");
-			console.log("------------------------------------");
-			console.log(body);
-			console.log("------------------------------------");						
-		});
-	}).on('error', function(e) {
-	  console.log("http Got error: " + e.message);
-	});
-	
-	console.log("<< fetchRTParkingData")
-	return body
- };
-	
-
-
-  
-exports.helloGET = function helloGET (req, response) {
-
-	console.log(">> helloGet")
-	console.log("v17")
-  
-	console.dir(req)
-  
-	var options = {
-		host: 'www.brussels-parking-guidance.com',
-		path: '/API/API/Datex/Export?publication=dynamic&publication=dynamic'
-	};
-
-	https.get(options, function(res) {
-		console.log("http Got response: " + res.statusCode);
-	  
-		// Continuously update stream with data
-		var body = '';
-		res.on('data', function(d) {
-			body += d;
-		});
-		
-		res.on('end', function() {
-			console.log("res.on end");
-			console.log("------------------------------------");
-	//		console.log(body);
-			console.log("------------------------------------");
-			
-
-			console.log("test bxl xml");
-			
-			
-			var parkingStatus = parseParkingBxl(body)
-			
-			let available = 0
-			body = ""
-			for (var i in BrusselsParkings){
-				if ((parkingStatus[BrusselsParkings[i].id].open == "open") 
-						&& (parkingStatus[BrusselsParkings[i].id].status == "spacesAvailable")){
-					body = BrusselsParkings[i].name + " has space available"
-					available += 1
-					}
-			}
-			
-			if (available == 0){
-				body = "no places available"
-			}
-
-			response.send(body);
-
-			console.log("json parse done");
-		});
-
-	  
-	}).on('error', function(e) {
-	  console.log("http Got error: " + e.message);
-	});
-	
-	console.log("<< helloGet")
- };
-
-
-
-/**
- *  gcloud beta functions deploy helloGET --stage-bucket gs://tom_hostyn_parking_staging --trigger-http
- *  https://us-central1-parkingfinder-6bbaa.cloudfunctions.net/helloGET
-	https://us-central1-parkingfinder-6bbaa.cloudfunctions.net/GetBrussels
- */
- 

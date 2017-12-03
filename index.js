@@ -205,21 +205,7 @@ function processV1Request (request, response) {
 			googleRichResponse: parkingWelcomeRichResponse
 		};	
 		sendGoogleResponse(responseToUser);
-    },
-    // The parking.welcome intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
-    'parking.welcome': () => {
-		console.error("parking.welcome intent matched")
-      // Use the Actions on Google lib to respond to Google requests; for other requests use JSON
-      if (requestSource === googleAssistantRequest) {
-        let responseToUser = {
-          googleRichResponse: parkingWelcomeRichResponse, // Optional, uncomment to enable
-          //googleOutputContexts: ['weather', 2, { ['city']: 'rome' }], // Optional, uncomment to enable
-          speech: 'woof woof', // spoken response
-          text: 'must cook' // displayed response
-        };
-		sendGoogleResponse(responseToUser);
-      }
-    },
+    }, 
     // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
     'input.unknown': () => {
 		console.error("input.unknown intent matched")

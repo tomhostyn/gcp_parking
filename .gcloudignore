@@ -17,6 +17,6 @@
 dialogflow/
 bxl_xml_sample/
 bin
-node_modules/
+node_modules
 
 #!include:.gitignore

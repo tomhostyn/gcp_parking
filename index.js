@@ -198,14 +198,6 @@ function processV1Request (request, response) {
 		sendParkingResponse(request)
 		
     },
-    // The debug intent has been matched
-    'debug.here': () => {
-		console.log("find.parking intent matched")
-        let responseToUser = {
-			googleRichResponse: parkingWelcomeRichResponse
-		};	
-		sendGoogleResponse(responseToUser);
-    }, 
     // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
     'input.unknown': () => {
 		console.error("input.unknown intent matched")
@@ -213,12 +205,8 @@ function processV1Request (request, response) {
     },
     // Default handler for unknown or undefined actions
     'default': () => {
-		console.error("default intent matched")
-        let responseToUser = {
-          speech: 'search and destroy', // spoken response
-          text: 'stay home read a book' // displayed response
-        };
-        sendGoogleResponse(responseToUser);
+		console.error("input.unknown intent matched")
+        sendGoogleResponse('I\'m having trouble, can you try that again?'); // Send simple response to user
     }
   };
 

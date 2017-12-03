@@ -5,13 +5,51 @@
 // using the Brussels open data store http://opendatastore.brussels/dataset/parking-occupancy
 //
 
+// not fit for any purpose.  
 
 var http = require('http')
 var https = require('https')
 var xml2js = require('xml2js')
 
-const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
+const version = "v30"
 
+//  ********************************************************************************
+//
+//  REST entry points
+//
+//  ********************************************************************************
+
+
+// hello world test
+exports.helloWorld = (req, res) => res.send("Hello, World!");
+
+/**
+ * HTTP Cloud Function.
+ *
+ * @param {Object} request Cloud Function request context.
+ * @param {Object} response Cloud Function response context.
+ */
+
+exports.findParking = function findParkingFulfilment (request, response) {
+	console.log(">> findParkingFulfilment")
+	
+	logAgentRequest(request)
+	
+	if (request.body.result) {
+		processV1Request(request, response);
+	} else if (request.body.queryResult) {
+		console.error ("Dialogflow V2 requests not supported");
+		response.status(501).send({ error: 'Dialogflow V2 requests not supported' });
+	} else {
+		console.error('Invalid Request');
+		return response.status(400).end('Invalid Webhook Request (expecting v1 or v2 webhook request)');
+	}	
+	console.log("<< findParkingFulfilment")
+}
+
+
+
+const DialogflowApp = require('actions-on-google').DialogflowApp; // Google Assistant helper library
 
 function parseParkingBxl(xml){
 	
@@ -44,7 +82,7 @@ function parseParkingBxl(xml){
 
 function logAgentRequest(request){
 	
-	console.log("v28")
+	console.log(version)
 	
 	switch (request.method) {
     case 'GET':
@@ -61,67 +99,44 @@ function logAgentRequest(request){
       break;
 	}
 	
-	console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-	console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+	console.log('Dialogflow Request headers: ');
+	console.log(JSON.stringify(request.headers));
+	console.log('Dialogflow Request body: ');
+	console.log(JSON.stringify(request.body));
 
 	if (request.body.result) {
 		console.log("Dialogflow V1 request");
+
+		if (request.body.result.action === undefined){
+			console.error("no request.body.result.action");
+		} else {
+			console.log("request.body.result.action: ",request.body.result.action);
+		}
+
+		if (request.body.result.resolvedQuery === undefined){
+			console.error("no request.body.result.resolvedQuery");
+		} else {
+			console.log("request.body.result.resolvedQuery: ", JSON.stringify(request.body.result.resolvedQuery))
+		}
+
+		if (request.body.result.parameters === undefined){
+			console.error("no request.body.result.parameters");
+		} else {
+			console.log("request.body.result.parameters: ", JSON.stringify(request.body.result.parameters))
+		}
+		
+		let requestSource = (request.body.originalRequest) ? request.body.originalRequest.source : undefined;
+		const googleAssistantRequest = 'google'; // Constant to identify Google Assistant requests
+		if (requestSource === googleAssistantRequest) {
+			console.log("request from google assistant");
+		} else {
+			console.error("request from unknown source");
+		}
 	} else if (request.body.queryResult) {
 		console.error("Dialogflow V2 request - unsupported");
 	} else {
-		console.log('Dialogflow Invalid Request');
-	}	
-	
-	if (request.body.result.action === undefined){
-		console.error("no request.body.result.action");
-	} else {
-		console.log("request.body.result.action: ",request.body.result.action);
+		console.error('Dialogflow Invalid Request');
 	}
-
-	if (request.body.result.resolvedQuery === undefined){
-		console.error("no request.body.result.resolvedQuery");
-	} else {
-		console.log("request.body.result.resolvedQuery: ", JSON.stringify(request.body.result.resolvedQuery))
-	}
-
-	if (request.body.result.parameters === undefined){
-		console.error("no request.body.result.parameters");
-	} else {
-		console.log("request.body.result.parameters: ", JSON.stringify(request.body.result.parameters))
-	}
-	
-	let requestSource = (request.body.originalRequest) ? request.body.originalRequest.source : undefined;
-	const googleAssistantRequest = 'google'; // Constant to identify Google Assistant requests
-	if (requestSource === googleAssistantRequest) {
-		console.log("request from google assistant");
-	} else {
-		console.error("request from unknown source");
-	}
-}
-
-/**
- * HTTP Cloud Function.
- *
- * @param {Object} request Cloud Function request context.
- * @param {Object} response Cloud Function response context.
- */
-
-exports.findParking = function findParkingFulfilment (request, response) {
-	console.log(">> findParkingFulfilment")
-	
-	logAgentRequest(request)
-	
-	if (request.body.result) {
-		processV1Request(request, response);
-		console.log("V1");
-	} else if (request.body.queryResult) {
-		console.error ("Dialogflow V2 requests not supported");
-		response.status(501).send({ error: 'Dialogflow V2 requests not supported' });
-	} else {
-		console.error('Invalid Request');
-		return response.status(400).end('Invalid Webhook Request (expecting v1 or v2 webhook request)');
-	}	
-	console.log("<< findParkingFulfilment")
 }
 
 
@@ -515,7 +530,7 @@ function fetchRTParkingData(req){
 
 
   
-exports.helloGETX = function helloGETXX (req, response) {
+exports.helloGET = function helloGET (req, response) {
 
 	console.log(">> helloGet")
 	console.log("v17")

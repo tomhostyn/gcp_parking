@@ -169,7 +169,6 @@ function logAgentRequest(request){
 	}
 }
 
-
 /*
  * Function to handle v1 webhook requests from Dialogflow
  */
@@ -196,7 +195,6 @@ function processV1Request (request, response) {
     'find.parking': () => {
 		console.log("find.parking intent matched")
 		sendParkingResponse(request)
-		
     },
     // The default fallback intent has been matched, try to recover (https://dialogflow.com/docs/intents#fallback_intents)
     'input.unknown': () => {
@@ -378,46 +376,46 @@ var BrusselsParkings = {
 			}).on('error', function(e) {
 			  console.log("http Got error: " + e.message);
 			});	
+	}
 }
 
-  // Function to send correctly formatted responses to Dialogflow which are then sent to the user
-  function sendResponse (responseToUser) {
-    // if the response is a string send it as a response to the user
-    if (typeof responseToUser === 'string') {
-      let responseJson = {};
-      responseJson.speech = responseToUser; // spoken response
-      responseJson.displayText = responseToUser; // displayed response
-      response.json(responseJson); // Send response to Dialogflow
-	  console.log('Response to Dialogflow (string): ' + JSON.stringify(responseJson));
+// Function to send correctly formatted responses to Dialogflow which are then sent to the user
+function sendResponse (responseToUser) {
+	let responseJson = {};
+	if (typeof responseToUser === 'string') {
+		// if the response is a string send it as a response to the user
+		responseJson.speech = responseToUser; // spoken response
+		responseJson.displayText = responseToUser; // displayed response
+	} else {
+		// If the response to the user includes rich responses or contexts send them to Dialogflow
 
-    } else {
-      // If the response to the user includes rich responses or contexts send them to Dialogflow
-      let responseJson = {};
-      // If speech or displayText is defined, use it to respond (if one isn't defined use the other's value)
-      responseJson.speech = responseToUser.speech || responseToUser.displayText;
-      responseJson.displayText = responseToUser.displayText || responseToUser.speech;
-      // Optional: add rich messages for integrations (https://dialogflow.com/docs/rich-messages)
-      responseJson.data = responseToUser.data;
-      // Optional: add contexts (https://dialogflow.com/docs/contexts)
-      responseJson.contextOut = responseToUser.outputContexts;
+		// If speech or displayText is defined, use it to respond (if one isn't defined use the other's value)
+		responseJson.speech = responseToUser.speech || responseToUser.displayText;
+		responseJson.displayText = responseToUser.displayText || responseToUser.speech;
 
-      console.log('Response to Dialogflow(rich): ' + JSON.stringify(responseJson));
-      response.json(responseJson); // Send response to Dialogflow
-    }
-  }
+		// Optional: add rich messages for integrations (https://dialogflow.com/docs/rich-messages)
+		responseJson.data = responseToUser.data;
+		// Optional: add contexts (https://dialogflow.com/docs/contexts)
+		responseJson.contextOut = responseToUser.outputContexts;
+	}
+
+	console.log('Response to Dialogflow (string): ')
+	console.log(JSON.stringify(responseJson));
+	response.json(responseJson); // Send response to Dialogflow
 }
 
-	  // Construct rich response for Google Assistant (v1 requests only)
-	const app = new DialogflowApp();
-	const parkingWelcomeRichResponse = app.buildRichResponse()
-		.addSimpleResponse('Welcome. Here\'s some real time parking info')
-		.addSuggestions(
-		['Downtown', 'Midi', 'North'])
-		// Create a basic card and add it to the rich response
-		.addBasicCard(app.buildBasicCard(``)
-		.setTitle('Brussels real time parking info')
-		.setImage('http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png',
-		  'car parking')
-		  .setImageDisplay('CROPPED'))
-		.addSimpleResponse({ speech: 'Where are you headed?',
-		displayText: 'Where are you headed? 🚗' });
+
+// Construct rich response for Google Assistant (v1 requests only)
+const app = new DialogflowApp();
+const parkingWelcomeRichResponse = app.buildRichResponse()
+	.addSimpleResponse('Welcome. Here\'s some real time parking info')
+	.addSuggestions(
+	['Downtown', 'Midi', 'North'])
+	// Create a basic card and add it to the rich response
+	.addBasicCard(app.buildBasicCard(``)
+	.setTitle('Brussels real time parking info')
+	.setImage('http://www.changiairport.com/content/dam/cag/3-transports/x3.0_transport-icon-big-7.png.pagespeed.ic.ypgOjLWv_Q.png',
+	  'car parking')
+	  .setImageDisplay('CROPPED'))
+	.addSimpleResponse({ speech: 'Where are you headed?',
+	displayText: 'Where are you headed? 🚗' });

@@ -114,21 +114,8 @@ function logAgentRequest(request){
 	let version = versionString()
 	console.log(version);
 	
-	switch (request.method) {
-    case 'GET':
-      console.log("GET");
-      break;
-    case 'PUT':
-      console.log("PUT");
-      break;
-    case 'POST':
-      console.log("POST");
-      break;
-    default:
-      console.error ("unsupported HTTP method: " + request.method);
-      break;
-	}
-	
+	console.log(request.method);
+
 	console.log('Dialogflow Request headers: ');
 	console.log(JSON.stringify(request.headers));
 	console.log('Dialogflow Request body: ');
